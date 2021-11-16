@@ -14,7 +14,7 @@ resource "google_storage_bucket" "rockstar" {
   lifecycle_rule {
     condition {
       age = 3
-      num_newer_version = 5
+      num_newer_versions = 5
     }
     action {
       type = "Delete"
