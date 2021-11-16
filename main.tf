@@ -11,13 +11,10 @@ resource "google_storage_bucket" "rockstar" {
   versioning {
     enabled = true
   }
-  condition {
-      num_newer_version = 5
-  }
   lifecycle_rule {
     condition {
       age = 3
-     
+      num_newer_version = 5
     }
     action {
       type = "Delete"
