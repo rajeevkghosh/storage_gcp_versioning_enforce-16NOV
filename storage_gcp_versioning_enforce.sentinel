@@ -1,0 +1,33 @@
+# This sentinel policies enforce usage of Number of versioned copies when versioning is enabled
+# These sentinel policies enforce Wells Fargo security principles
+
+# Import common-functions/tfplan-functions/tfplan-functions.sentinel
+# with alias "plan"
+import "tfplan-functions" as plan
+import "strings"
+import "types"
+
+# Get all Buckets
+allBuckets = plan.find_resources("google_storage_bucket")
+
+violations = {}
+for allBuckets as address, rc {
+	versioning = plan.evaluate_attribute(rc, "versioning.0.enabled")
+	is_null = rule { types.type_of(versioning) is "null" }
+	if not is_null {
+		if versioning {
+			num_versions = plan.evaluate_attribute(rc, "lifecycle_rule.0.condition.0.num_newer_versions")
+			if num_versions is null {
+				message = "num_newer_versions can't have null value if versioning is enabled "
+				violations[address] = message
+			}
+		}
+	}
+}
+
+print(violations)
+
+GCP_GCS_VERSIONING = rule { length(violations) is 0 }
+
+# Main rule
+main = rule { GCP_GCS_VERSIONING }
